@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: false,
   },
+  
+  // Force rebuild timestamp
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
 };
 
 export default nextConfig;
