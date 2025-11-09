@@ -1,0 +1,35 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Document/Invoice shape (blue) -->
+  <path d="M12 8 C12 6.895 12.895 6 14 6 H28 L36 14 V38 C36 39.105 35.105 40 34 40 H14 C12.895 40 12 39.105 12 38 Z" 
+        fill="url(#blueGrad)"/>
+  
+  <!-- Folded corner (darker blue) -->
+  <path d="M28 6 L28 14 L36 14 Z" fill="#1E40AF" opacity="0.7"/>
+  
+  <!-- Dollar sign (yellow) -->
+  <g>
+    <path d="M18 10 V16" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M20 11 Q20 10 18.5 10 Q16 10 16 11.5 Q16 13 18.5 13 Q20 13 20 14.5 Q20 16 18.5 16 Q16 16 16 15" stroke="#FCD34D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  
+  <!-- Document lines/content (yellow) -->
+  <rect x="16" y="18" width="10" height="2.5" rx="1.25" fill="#FCD34D"/>
+  <rect x="16" y="23" width="16" height="2.5" rx="1.25" fill="#FCD34D"/>
+  <rect x="16" y="28" width="14" height="2.5" rx="1.25" fill="#FCD34D"/>
+  <rect x="16" y="33" width="12" height="2.5" rx="1.25" fill="#FCD34D"/>
+  
+  <!-- Checkmark/approval indicator (green accent) -->
+  <path d="M30 33 L33 36 L40 27" stroke="#10B981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
