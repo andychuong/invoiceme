@@ -116,16 +116,24 @@ jobs:
     - name: Install Railway CLI
       run: npm install -g @railway/cli
 
-    - name: Authenticate Railway
+    - name: Setup Railway Authentication
       run: |
-        echo "Authenticating with Railway..."
+        echo "Setting up Railway authentication..."
         if [ -z "$RAILWAY_API_TOKEN" ]; then
           echo "Error: RAILWAY_API_TOKEN is not set"
           exit 1
         fi
         echo "Token is set (length: ${#RAILWAY_API_TOKEN})"
+        # Set environment variable for Railway CLI
         export RAILWAY_API_TOKEN="$RAILWAY_API_TOKEN"
-        railway whoami
+        # Also set RAILWAY_TOKEN if available (for project-specific actions)
+        if [ -n "$RAILWAY_TOKEN" ]; then
+          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
+        fi
+        # Create Railway config directory and write token to config file
+        mkdir -p ~/.railway
+        echo "{\"token\": \"$RAILWAY_API_TOKEN\"}" > ~/.railway/config.json
+        echo "Railway authentication configured"
 
     - name: Link Railway Project (if needed)
       run: |
@@ -138,7 +146,16 @@ jobs:
 
     - name: Deploy to Railway
       working-directory: ./backend
-      run: railway up --service backend
+      run: |
+        # Use RAILWAY_TOKEN for project-specific deployment if available, otherwise use RAILWAY_API_TOKEN
+        if [ -n "$RAILWAY_TOKEN" ]; then
+          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
+          echo "Using RAILWAY_TOKEN for deployment"
+        else
+          export RAILWAY_TOKEN="$RAILWAY_API_TOKEN"
+          echo "Using RAILWAY_API_TOKEN for deployment"
+        fi
+        railway up --service backend
 
   # Deploy Frontend to Railway
   deploy-frontend:
@@ -158,16 +175,24 @@ jobs:
     - name: Install Railway CLI
       run: npm install -g @railway/cli
 
-    - name: Authenticate Railway
+    - name: Setup Railway Authentication
       run: |
-        echo "Authenticating with Railway..."
+        echo "Setting up Railway authentication..."
         if [ -z "$RAILWAY_API_TOKEN" ]; then
           echo "Error: RAILWAY_API_TOKEN is not set"
           exit 1
         fi
         echo "Token is set (length: ${#RAILWAY_API_TOKEN})"
+        # Set environment variable for Railway CLI
         export RAILWAY_API_TOKEN="$RAILWAY_API_TOKEN"
-        railway whoami
+        # Also set RAILWAY_TOKEN if available (for project-specific actions)
+        if [ -n "$RAILWAY_TOKEN" ]; then
+          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
+        fi
+        # Create Railway config directory and write token to config file
+        mkdir -p ~/.railway
+        echo "{\"token\": \"$RAILWAY_API_TOKEN\"}" > ~/.railway/config.json
+        echo "Railway authentication configured"
 
     - name: Link Railway Project (if needed)
       run: |
