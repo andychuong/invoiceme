@@ -1,11 +1,9 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "./mvnw clean package -DskipTests"
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "java -Dserver.port=$PORT -jar /app/target/invoiceme-backend-1.0.0.jar",
     "healthcheckPath": "/actuator/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",

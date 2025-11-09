@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = ["openjdk17"]
+
+[phases.build]
+cmds = ["./mvnw clean package -DskipTests"]
+
+[start]
+cmd = "java -Dserver.port=$PORT -jar target/invoiceme-backend-1.0.0.jar"
+
