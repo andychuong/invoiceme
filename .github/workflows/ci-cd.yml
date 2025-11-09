@@ -104,6 +104,9 @@ jobs:
     needs: [backend-test, frontend-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
     
     steps:
     - name: Checkout code
@@ -113,29 +116,27 @@ jobs:
       run: npm install -g @railway/cli
 
     - name: Authenticate Railway
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       run: |
         echo "Authenticating with Railway..."
+        if [ -z "$RAILWAY_TOKEN" ]; then
+          echo "Error: RAILWAY_TOKEN is not set"
+          exit 1
+        fi
+        echo "Token is set (length: ${#RAILWAY_TOKEN})"
+        export RAILWAY_TOKEN="$RAILWAY_TOKEN"
         railway whoami
 
     - name: Link Railway Project (if needed)
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
       run: |
         if [ -n "$RAILWAY_PROJECT_ID" ]; then
           echo "Linking to Railway project..."
-          railway link $RAILWAY_PROJECT_ID
+          railway link $RAILWAY_PROJECT_ID || true
         else
           echo "No RAILWAY_PROJECT_ID set - Railway will auto-detect from GitHub repo"
         fi
 
     - name: Deploy to Railway
       working-directory: ./backend
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
       run: railway up --service backend
 
   # Deploy Frontend to Railway
@@ -144,6 +145,9 @@ jobs:
     needs: [backend-test, frontend-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
     
     steps:
     - name: Checkout code
@@ -153,16 +157,17 @@ jobs:
       run: npm install -g @railway/cli
 
     - name: Authenticate Railway
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       run: |
         echo "Authenticating with Railway..."
+        if [ -z "$RAILWAY_TOKEN" ]; then
+          echo "Error: RAILWAY_TOKEN is not set"
+          exit 1
+        fi
+        echo "Token is set (length: ${#RAILWAY_TOKEN})"
+        export RAILWAY_TOKEN="$RAILWAY_TOKEN"
         railway whoami
 
     - name: Link Railway Project (if needed)
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
       run: |
         if [ -n "$RAILWAY_PROJECT_ID" ]; then
           echo "Linking to Railway project..."
@@ -173,9 +178,6 @@ jobs:
 
     - name: Deploy to Railway
       working-directory: ./frontend
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
       run: railway up --service frontend
 
   # Notify on Success/Failure (Optional)
