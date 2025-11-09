@@ -1,11 +1,5 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
-aptPkgs = []
-
-[phases.build]
-cmds = [
-  "export NEXT_PUBLIC_API_URL=https://invoiceme-backend.up.railway.app/api && echo '=== Building with NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL ===' && npm run build"
-]
 
 [build]
 cacheDirectories = []
