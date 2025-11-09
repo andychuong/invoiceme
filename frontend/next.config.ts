@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable standalone output for Railway deployment
+  output: 'standalone',
+  
   // Environment variables
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -14,11 +17,6 @@ const nextConfig: NextConfig = {
   // Image optimization
   images: {
     unoptimized: false,
-  },
-  
-  // Force rebuild timestamp
-  generateBuildId: async () => {
-    return `build-${Date.now()}`;
   },
 };
 
