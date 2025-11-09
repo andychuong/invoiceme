@@ -5,8 +5,14 @@ nixPkgs = ["nodejs_20"]
 cmds = ["npm ci"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "echo 'NEXT_PUBLIC_API_URL='$NEXT_PUBLIC_API_URL",
+  "npm run build"
+]
 
 [start]
 cmd = "npm start"
+
+[variables]
+NEXT_PUBLIC_API_URL = "https://invoiceme-backend.up.railway.app/api"
 
