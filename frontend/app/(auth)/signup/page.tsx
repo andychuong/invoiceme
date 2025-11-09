@@ -5,32 +5,67 @@ import { useRouter } from 'next/navigation';
 import {
   Box,
   Button,
-  Container,
   Heading,
   Input,
   VStack,
   Text,
   Tabs,
-  Link as ChakraLink,
   Field,
   HStack,
-  Stack,
-  SimpleGrid,
-  Icon,
+  Grid,
+  GridItem,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 
-// API URL - use environment variable or fallback to localhost
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
+// Reusable Components
+const DecorativeCircle = ({ top, right, bottom, left, size, bg }: any) => (
+  <Box
+    position="absolute"
+    top={top}
+    right={right}
+    bottom={bottom}
+    left={left}
+    w={size}
+    h={size}
+    borderRadius="full"
+    bg={bg}
+    bgGradient={bg?.startsWith('radial') ? bg : undefined}
+  />
+);
+
+const FeatureItem = ({ title, description }: { title: string; description: string }) => (
+  <HStack color="white" alignItems="flex-start">
+    <Box w="8px" h="8px" borderRadius="full" bg="white" mt={2} flexShrink={0} />
+    <VStack alignItems="flex-start" gap={0}>
+      <Text fontWeight="semibold">{title}</Text>
+      <Text fontSize="sm" opacity={0.9}>{description}</Text>
+    </VStack>
+  </HStack>
+);
+
+const FormField = ({ label, type = 'text', value, onChange, placeholder, required = true }: any) => (
+  <Field.Root>
+    <Field.Label>{label}</Field.Label>
+    <Input
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      required={required}
+    />
+  </Field.Root>
+);
 
 export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'create' | 'join'>('create');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
+  const [signupMode, setSignupMode] = useState<'create' | 'join'>('create');
 
-  // Create Company form
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [createForm, setCreateForm] = useState({
     username: '',
     password: '',
@@ -38,8 +73,6 @@ export default function SignupPage() {
     displayName: '',
     companyName: '',
   });
-
-  // Join Company form
   const [joinForm, setJoinForm] = useState({
     username: '',
     password: '',
@@ -48,278 +81,317 @@ export default function SignupPage() {
     companyCode: '',
   });
 
-  const handleCreateCompany = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuthSubmit = async (endpoint: string, data: any, successMessage: string) => {
     setIsLoading(true);
-
     try {
-      const response = await fetch(`${API_URL}/auth/signup`, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createForm),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Signup failed');
+        throw new Error(errorText || 'Request failed');
       }
 
-      const data = await response.json();
-      authService.setToken(data.token);
-      authService.setUserData(data);
+      const responseData = await response.json();
+      authService.setToken(responseData.token);
+      authService.setUserData(responseData);
 
-      toast.success(`Welcome to ${data.companyName}! You are now an admin.`);
+      toast.success(successMessage);
       router.push('/customers');
     } catch (error: any) {
-      toast.error(error.message || 'Signup failed. Please try again');
+      toast.error(error.message || 'Request failed. Please try again');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleJoinCompany = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${API_URL}/auth/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(joinForm),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Join failed');
-      }
-
-      const data = await response.json();
-      authService.setToken(data.token);
-      authService.setUserData(data);
-
-      toast.success(`Welcome to ${data.companyName}!`);
-      router.push('/customers');
-    } catch (error: any) {
-      toast.error(error.message || 'Join failed. Please check your company code');
-    } finally {
-      setIsLoading(false);
-    }
+    handleAuthSubmit('/auth/login', loginForm, 'Welcome back!');
   };
+
+  const handleCreateCompany = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAuthSubmit(
+      '/auth/signup',
+      createForm,
+      `Welcome! You are now an admin.`
+    );
+  };
+
+  const handleJoinCompany = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAuthSubmit(
+      '/auth/join',
+      joinForm,
+      'Welcome to the team!'
+    );
+  };
+
+  const features = [
+    { title: 'Lightning Fast', description: 'Create invoices in under 30 seconds' },
+    { title: 'Payment Tracking', description: 'Monitor payments and outstanding balances' },
+    { title: 'Powerful Analytics', description: 'Real-time revenue tracking' },
+  ];
 
   return (
-    <Box minH="100vh" position="relative" overflow="hidden">
-      {/* Gradient Background */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        h="60vh"
-        bgGradient="linear(to-br, blue.600, purple.600)"
-        zIndex={-1}
-      />
-      
-      <Container maxW="7xl" py={12}>
-        {/* Header/Hero Section */}
-        <VStack gap={12} mb={16}>
-          <VStack gap={4} textAlign="center" color="white" pt={8}>
-            <Heading size="4xl" fontWeight="bold" letterSpacing="tight">
-              InvoiceMe
+    <Grid
+      templateColumns={{ base: '1fr', lg: '1fr 1fr' }}
+      minH="100vh"
+      bg="white"
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Left Side - Marketing */}
+      <GridItem
+        bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        p={{ base: 8, lg: 16 }}
+        position="relative"
+        overflow="visible"
+      >
+        {/* Decorative Circles */}
+        <DecorativeCircle top="-50px" right="-100px" size="300px" bg="whiteAlpha.200" />
+        <DecorativeCircle bottom="-30px" left="-30px" size="150px" bg="whiteAlpha.200" />
+        <DecorativeCircle top="20%" left="5%" size="100px" bg="whiteAlpha.100" />
+        <DecorativeCircle bottom="30%" left="10%" size="80px" bg="whiteAlpha.150" />
+        <DecorativeCircle top="60%" right="-50px" size="120px" bg="whiteAlpha.100" />
+
+        <VStack gap={8} maxW="lg" zIndex={1}>
+          <VStack gap={4} textAlign={{ base: 'center', lg: 'left' }} alignItems="flex-start" w="100%">
+            <Heading size="4xl" fontWeight="bold" color="white" lineHeight="1.2">
+              The World's Most Powerful Invoicing Tool
             </Heading>
-            <Heading size="2xl" fontWeight="normal" maxW="3xl">
-              Effortless Invoicing for Modern Businesses
-            </Heading>
-            <Text fontSize="xl" maxW="2xl" opacity={0.9}>
-              Create professional invoices in seconds, track payments effortlessly, 
-              and grow your business with powerful insights. All in one beautiful platform.
+            <Text fontSize="lg" color="whiteAlpha.900">
+              Create your professional invoices with the fastest invoice building platform.
+              Manage customers, track payments, and grow your business with ease.
             </Text>
           </VStack>
 
-          {/* Feature Cards */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} gap={6} w="100%" mt={8}>
-            <Box bg="whiteAlpha.200" backdropFilter="blur(10px)" p={6} borderRadius="xl" color="white">
-              <Text fontSize="3xl" mb={3}>⚡</Text>
-              <Heading size="md" mb={2}>Lightning Fast</Heading>
-              <Text opacity={0.9}>Create and send invoices in under 30 seconds</Text>
-            </Box>
-            <Box bg="whiteAlpha.200" backdropFilter="blur(10px)" p={6} borderRadius="xl" color="white">
-              <Text fontSize="3xl" mb={3}>🔒</Text>
-              <Heading size="md" mb={2}>Secure & Private</Heading>
-              <Text opacity={0.9}>Bank-level encryption keeps your data safe</Text>
-            </Box>
-            <Box bg="whiteAlpha.200" backdropFilter="blur(10px)" p={6} borderRadius="xl" color="white">
-              <Text fontSize="3xl" mb={3}>📊</Text>
-              <Heading size="md" mb={2}>Powerful Analytics</Heading>
-              <Text opacity={0.9}>Track revenue and payments in real-time</Text>
-            </Box>
-          </SimpleGrid>
+          <VStack gap={4} w="100%" alignItems="flex-start">
+            {features.map((feature) => (
+              <FeatureItem key={feature.title} {...feature} />
+            ))}
+          </VStack>
         </VStack>
+      </GridItem>
 
-        {/* Signup Form */}
-        <Box maxW="md" mx="auto">
-          <Box bg="white" p={8} borderRadius="2xl" boxShadow="2xl">
-            <VStack gap={6}>
-              <VStack gap={2} textAlign="center">
-                <Heading size="xl" color="gray.800">Get Started Free</Heading>
-                <Text color="gray.600">No credit card required • Start in 60 seconds</Text>
-              </VStack>
+      {/* Right Side - Auth Forms */}
+      <GridItem
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        p={{ base: 8, lg: 12 }}
+        bg="gray.50"
+        position="relative"
+        overflow="visible"
+      >
+        {/* Decorative Circles */}
+        <DecorativeCircle
+          top="-80px"
+          left="-80px"
+          size="250px"
+          bg="radial(rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1))"
+        />
+        <DecorativeCircle
+          bottom="-60px"
+          right="-60px"
+          size="180px"
+          bg="radial(rgba(118, 75, 162, 0.15), rgba(102, 126, 234, 0.1))"
+        />
+        <DecorativeCircle
+          top="30%"
+          right="10%"
+          size="120px"
+          bg="radial(rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.08))"
+        />
+        <DecorativeCircle
+          bottom="20%"
+          left="5%"
+          size="90px"
+          bg="radial(rgba(118, 75, 162, 0.12), rgba(102, 126, 234, 0.08))"
+        />
 
-              <Tabs.Root value={activeTab} onValueChange={(e) => setActiveTab(e.value as 'create' | 'join')} w="100%">
-                <Tabs.List>
-                  <Tabs.Trigger value="create">Create Company</Tabs.Trigger>
-                  <Tabs.Trigger value="join">Join Company</Tabs.Trigger>
-                </Tabs.List>
-
-              <Tabs.Content value="create" pt={6}>
-                <form onSubmit={handleCreateCompany}>
-                  <VStack gap={4}>
-                    <Field.Root>
-                      <Field.Label>Username</Field.Label>
-                      <Input
-                        value={createForm.username}
-                        onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
-                        placeholder="Enter your username"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Password</Field.Label>
-                      <Input
-                        type="password"
-                        value={createForm.password}
-                        onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                        placeholder="Enter your password"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Email</Field.Label>
-                      <Input
-                        type="email"
-                        value={createForm.email}
-                        onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Display Name</Field.Label>
-                      <Input
-                        value={createForm.displayName}
-                        onChange={(e) => setCreateForm({ ...createForm, displayName: e.target.value })}
-                        placeholder="Enter your full name"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Company Name</Field.Label>
-                      <Input
-                        value={createForm.companyName}
-                        onChange={(e) => setCreateForm({ ...createForm, companyName: e.target.value })}
-                        placeholder="Enter your company name"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Button
-                      type="submit"
-                      colorScheme="blue"
-                      width="100%"
-                      loading={isLoading}
-                      loadingText="Creating account..."
-                    >
-                      Create Company & Sign Up
-                    </Button>
-                  </VStack>
-                </form>
-              </Tabs.Content>
-
-              <Tabs.Content value="join" pt={6}>
-                <form onSubmit={handleJoinCompany}>
-                  <VStack gap={4}>
-                    <Field.Root>
-                      <Field.Label>Username</Field.Label>
-                      <Input
-                        value={joinForm.username}
-                        onChange={(e) => setJoinForm({ ...joinForm, username: e.target.value })}
-                        placeholder="Enter your username"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Password</Field.Label>
-                      <Input
-                        type="password"
-                        value={joinForm.password}
-                        onChange={(e) => setJoinForm({ ...joinForm, password: e.target.value })}
-                        placeholder="Enter your password"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Email</Field.Label>
-                      <Input
-                        type="email"
-                        value={joinForm.email}
-                        onChange={(e) => setJoinForm({ ...joinForm, email: e.target.value })}
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Display Name</Field.Label>
-                      <Input
-                        value={joinForm.displayName}
-                        onChange={(e) => setJoinForm({ ...joinForm, displayName: e.target.value })}
-                        placeholder="Enter your full name"
-                        required
-                      />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Company Code</Field.Label>
-                      <Input
-                        value={joinForm.companyCode}
-                        onChange={(e) => setJoinForm({ ...joinForm, companyCode: e.target.value })}
-                        placeholder="Enter company code from your admin"
-                        required
-                      />
-                      <Field.HelperText>
-                        Ask your company admin for the company code
-                      </Field.HelperText>
-                    </Field.Root>
-
-                    <Button
-                      type="submit"
-                      colorScheme="blue"
-                      width="100%"
-                      loading={isLoading}
-                      loadingText="Joining company..."
-                    >
-                      Join Company & Sign Up
-                    </Button>
-                  </VStack>
-                </form>
-              </Tabs.Content>
-              </Tabs.Root>
-
-              <Text color="gray.600" textAlign="center" fontSize="sm" mt={4}>
-                Already have an account?{' '}
-                <ChakraLink as={Link} href="/login" color="blue.600" fontWeight="medium">
-                  Sign in
-                </ChakraLink>
+        <Box w="100%" maxW="md" zIndex={1} position="relative">
+          <VStack gap={8} w="100%">
+            <VStack gap={2} textAlign="center" w="100%">
+              <Heading size="2xl" color="gray.800">
+                {authMode === 'login' ? 'Sign in Now' : 'Get Started Free'}
+              </Heading>
+              <Text color="gray.600">
+                {authMode === 'login'
+                  ? 'Enter your credentials to access your account'
+                  : 'No credit card required • Start in 60 seconds'}
               </Text>
             </VStack>
-          </Box>
+
+            <HStack gap={4} w="100%" justifyContent="center">
+              <Button
+                variant={authMode === 'login' ? 'solid' : 'ghost'}
+                colorScheme="purple"
+                onClick={() => setAuthMode('login')}
+                px={8}
+              >
+                Sign In
+              </Button>
+              <Button
+                variant={authMode === 'signup' ? 'solid' : 'ghost'}
+                colorScheme="purple"
+                onClick={() => setAuthMode('signup')}
+                px={8}
+              >
+                Sign Up
+              </Button>
+            </HStack>
+
+            <Box w="100%" bg="white" p={8} borderRadius="xl" boxShadow="lg">
+              {authMode === 'login' ? (
+                <form onSubmit={handleLogin}>
+                  <VStack gap={4}>
+                    <FormField
+                      label="Username or Email"
+                      value={loginForm.username}
+                      onChange={(e: any) => setLoginForm({ ...loginForm, username: e.target.value })}
+                      placeholder="Enter your username or email"
+                    />
+                    <FormField
+                      label="Password"
+                      type="password"
+                      value={loginForm.password}
+                      onChange={(e: any) => setLoginForm({ ...loginForm, password: e.target.value })}
+                      placeholder="Enter your password"
+                    />
+                    <Button
+                      type="submit"
+                      colorScheme="purple"
+                      width="100%"
+                      size="lg"
+                      loading={isLoading}
+                      loadingText="Signing in..."
+                    >
+                      Sign In
+                    </Button>
+                  </VStack>
+                </form>
+              ) : (
+                <Tabs.Root
+                  value={signupMode}
+                  onValueChange={(e) => setSignupMode(e.value as 'create' | 'join')}
+                  w="100%"
+                >
+                  <Tabs.List mb={4}>
+                    <Tabs.Trigger value="create">Create Company</Tabs.Trigger>
+                    <Tabs.Trigger value="join">Join Company</Tabs.Trigger>
+                  </Tabs.List>
+
+                  <Tabs.Content value="create" pt={6}>
+                    <form onSubmit={handleCreateCompany}>
+                      <VStack gap={4}>
+                        <FormField
+                          label="Username"
+                          value={createForm.username}
+                          onChange={(e: any) => setCreateForm({ ...createForm, username: e.target.value })}
+                          placeholder="Enter your username"
+                        />
+                        <FormField
+                          label="Password"
+                          type="password"
+                          value={createForm.password}
+                          onChange={(e: any) => setCreateForm({ ...createForm, password: e.target.value })}
+                          placeholder="Enter your password"
+                        />
+                        <FormField
+                          label="Email"
+                          type="email"
+                          value={createForm.email}
+                          onChange={(e: any) => setCreateForm({ ...createForm, email: e.target.value })}
+                          placeholder="Enter your email"
+                        />
+                        <FormField
+                          label="Display Name"
+                          value={createForm.displayName}
+                          onChange={(e: any) => setCreateForm({ ...createForm, displayName: e.target.value })}
+                          placeholder="Enter your full name"
+                        />
+                        <FormField
+                          label="Company Name"
+                          value={createForm.companyName}
+                          onChange={(e: any) => setCreateForm({ ...createForm, companyName: e.target.value })}
+                          placeholder="Enter your company name"
+                        />
+                        <Button
+                          type="submit"
+                          colorScheme="purple"
+                          width="100%"
+                          size="lg"
+                          loading={isLoading}
+                          loadingText="Creating account..."
+                        >
+                          Create Company & Sign Up
+                        </Button>
+                      </VStack>
+                    </form>
+                  </Tabs.Content>
+
+                  <Tabs.Content value="join" pt={6}>
+                    <form onSubmit={handleJoinCompany}>
+                      <VStack gap={4}>
+                        <FormField
+                          label="Username"
+                          value={joinForm.username}
+                          onChange={(e: any) => setJoinForm({ ...joinForm, username: e.target.value })}
+                          placeholder="Enter your username"
+                        />
+                        <FormField
+                          label="Password"
+                          type="password"
+                          value={joinForm.password}
+                          onChange={(e: any) => setJoinForm({ ...joinForm, password: e.target.value })}
+                          placeholder="Enter your password"
+                        />
+                        <FormField
+                          label="Email"
+                          type="email"
+                          value={joinForm.email}
+                          onChange={(e: any) => setJoinForm({ ...joinForm, email: e.target.value })}
+                          placeholder="Enter your email"
+                        />
+                        <FormField
+                          label="Display Name"
+                          value={joinForm.displayName}
+                          onChange={(e: any) => setJoinForm({ ...joinForm, displayName: e.target.value })}
+                          placeholder="Enter your full name"
+                        />
+                        <FormField
+                          label="Company Code"
+                          value={joinForm.companyCode}
+                          onChange={(e: any) => setJoinForm({ ...joinForm, companyCode: e.target.value })}
+                          placeholder="Enter company code from your admin"
+                        />
+                        <Button
+                          type="submit"
+                          colorScheme="purple"
+                          width="100%"
+                          size="lg"
+                          loading={isLoading}
+                          loadingText="Joining company..."
+                        >
+                          Join Company & Sign Up
+                        </Button>
+                      </VStack>
+                    </form>
+                  </Tabs.Content>
+                </Tabs.Root>
+              )}
+            </Box>
+          </VStack>
         </Box>
-      </Container>
-    </Box>
+      </GridItem>
+    </Grid>
   );
 }
