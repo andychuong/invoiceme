@@ -8,10 +8,12 @@ import com.invoiceme.application.commands.invoice.MarkInvoiceAsSentCommand;
 import com.invoiceme.application.commands.invoice.MarkInvoiceAsSentHandler;
 import com.invoiceme.application.commands.payment.RecordPaymentCommand;
 import com.invoiceme.application.commands.payment.RecordPaymentHandler;
+import com.invoiceme.domain.company.Company;
 import com.invoiceme.domain.customer.Customer;
 import com.invoiceme.domain.invoice.Invoice;
 import com.invoiceme.domain.invoice.InvoiceStatus;
 import com.invoiceme.domain.payment.Payment;
+import com.invoiceme.infrastructure.persistence.CompanyRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,11 +43,20 @@ public class CustomerInvoicePaymentIntegrationTest {
 
     @Autowired
     private RecordPaymentHandler recordPaymentHandler;
+    
+    @Autowired
+    private CompanyRepository companyRepository;
 
     @Test
     public void testCompleteCustomerInvoicePaymentFlow() {
+        // Step 0: Create a test company
+        Company company = new Company();
+        company.setName("Test Company");
+        company = companyRepository.save(company);
+        
         // Step 1: Create a customer
         CreateCustomerCommand customerCommand = new CreateCustomerCommand(
+                company.getId(),
                 "John Doe",
                 "john.doe@example.com",
                 "123 Main St",
@@ -79,8 +90,12 @@ public class CustomerInvoicePaymentIntegrationTest {
         assertNotNull(invoice.getId());
         assertEquals(InvoiceStatus.DRAFT, invoice.getStatus());
         assertEquals(2, invoice.getLineItems().size());
-        assertEquals(new BigDecimal("1750.00"), invoice.getTotalAmount());
-        assertEquals(new BigDecimal("1750.00"), invoice.getBalance());
+        
+        // Use compareTo for BigDecimal comparison to avoid scale issues
+        assertEquals(0, new BigDecimal("1750.00").compareTo(invoice.getTotalAmount()), 
+                    "Total amount should be 1750.00 but was " + invoice.getTotalAmount());
+        assertEquals(0, new BigDecimal("1750.00").compareTo(invoice.getBalance()),
+                    "Balance should be 1750.00 but was " + invoice.getBalance());
 
         // Step 3: Mark invoice as sent
         MarkInvoiceAsSentCommand markSentCommand = new MarkInvoiceAsSentCommand(invoice.getId());

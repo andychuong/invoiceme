@@ -30,22 +30,29 @@ public class CreateInvoiceHandler {
                 customer,
                 invoiceNumber,
                 command.getIssueDate(),
-                command.getDueDate()
+                command.getDueDate(),
+                customer.getCompany()  // Use the company from the customer
         );
 
+        // First save the invoice without line items
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        // Then add line items and save again to ensure proper calculation
         if (command.getLineItems() != null && !command.getLineItems().isEmpty()) {
-            command.getLineItems().forEach(itemDto -> {
+            for (CreateInvoiceCommand.LineItemDto itemDto : command.getLineItems()) {
                 InvoiceLineItem lineItem = InvoiceLineItem.create(
-                        invoice,
+                        savedInvoice,
                         itemDto.getDescription(),
                         itemDto.getQuantity(),
                         itemDto.getUnitPrice()
                 );
-                invoice.addLineItem(lineItem);
-            });
+                savedInvoice.addLineItem(lineItem);
+            }
+            // Save again with line items to persist the calculated total
+            savedInvoice = invoiceRepository.save(savedInvoice);
         }
 
-        return invoiceRepository.save(invoice);
+        return savedInvoice;
     }
 
     private String generateInvoiceNumber() {

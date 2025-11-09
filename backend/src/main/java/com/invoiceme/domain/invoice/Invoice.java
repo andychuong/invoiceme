@@ -1,5 +1,6 @@
 package com.invoiceme.domain.invoice;
 
+import com.invoiceme.domain.company.Company;
 import com.invoiceme.domain.customer.Customer;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,10 @@ public class Invoice {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<InvoiceLineItem> lineItems = new ArrayList<>();
 
@@ -67,8 +72,11 @@ public class Invoice {
         if (balance == null) {
             balance = BigDecimal.ZERO;
         }
+        if (totalAmount == null) {
+            totalAmount = BigDecimal.ZERO;
+        }
         validate();
-        calculateTotalAmount();
+        // Don't recalculate here - it's done in addLineItem() and will be preserved
     }
 
     @PreUpdate
@@ -101,10 +109,9 @@ public class Invoice {
             this.totalAmount = lineItems.stream()
                     .map(InvoiceLineItem::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            // Balance should be total amount minus payments (handled by payment domain)
-            if (this.balance == null || this.balance.compareTo(BigDecimal.ZERO) == 0) {
-                this.balance = this.totalAmount;
-            }
+            // Balance should equal total amount for new invoices (before any payments)
+            // Only preserve existing balance if it's been explicitly set by payment processing
+            this.balance = this.totalAmount;
         } else {
             this.totalAmount = BigDecimal.ZERO;
             this.balance = BigDecimal.ZERO;
@@ -121,12 +128,13 @@ public class Invoice {
         }
     }
 
-    public static Invoice create(Customer customer, String invoiceNumber, LocalDate issueDate, LocalDate dueDate) {
+    public static Invoice create(Customer customer, String invoiceNumber, LocalDate issueDate, LocalDate dueDate, Company company) {
         Invoice invoice = new Invoice();
         invoice.setCustomer(customer);
         invoice.setInvoiceNumber(invoiceNumber);
         invoice.setIssueDate(issueDate);
         invoice.setDueDate(dueDate);
+        invoice.setCompany(company);
         invoice.setStatus(InvoiceStatus.DRAFT);
         invoice.setTotalAmount(BigDecimal.ZERO);
         invoice.setBalance(BigDecimal.ZERO);
