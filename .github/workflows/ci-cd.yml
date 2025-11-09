@@ -115,7 +115,6 @@ jobs:
       run: npm install -g @railway/cli
 
     - name: Deploy Backend to Railway
-      working-directory: ./backend
       run: |
         if [ -z "$RAILWAY_TOKEN" ]; then
           echo "Error: RAILWAY_TOKEN is not set"
@@ -142,7 +141,6 @@ jobs:
       run: npm install -g @railway/cli
 
     - name: Deploy Frontend to Railway
-      working-directory: ./frontend
       run: |
         if [ -z "$RAILWAY_TOKEN" ]; then
           echo "Error: RAILWAY_TOKEN is not set"
