@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
   
+  // Force new build ID to bust cache
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
+  
   // Production optimizations
   compress: true,
   poweredByHeader: false,
