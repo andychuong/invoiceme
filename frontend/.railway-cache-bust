@@ -1,0 +1,5 @@
+# Force Railway cache bust
+# This file forces a new deployment
+DEPLOY_TIME=2025-11-09T15:57:00Z
+BUILD_VERSION=1
+

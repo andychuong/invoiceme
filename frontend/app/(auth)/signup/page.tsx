@@ -14,6 +14,9 @@ import {
   Link as ChakraLink,
   Field,
   HStack,
+  Stack,
+  SimpleGrid,
+  Icon,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { authService } from '@/services/authService';
@@ -104,20 +107,68 @@ export default function SignupPage() {
   };
 
   return (
-    <Box minH="100vh" bg="gray.50" py={12}>
-      <Container maxW="md">
-        <VStack gap={8}>
-          <VStack gap={2}>
-            <Heading size="xl" color="blue.600">InvoiceMe</Heading>
-            <Text color="gray.600">Create your account</Text>
+    <Box minH="100vh" position="relative" overflow="hidden">
+      {/* Gradient Background */}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        h="60vh"
+        bgGradient="linear(to-br, blue.600, purple.600)"
+        zIndex={-1}
+      />
+      
+      <Container maxW="7xl" py={12}>
+        {/* Header/Hero Section */}
+        <VStack gap={12} mb={16}>
+          <VStack gap={4} textAlign="center" color="white" pt={8}>
+            <Heading size="4xl" fontWeight="bold" letterSpacing="tight">
+              InvoiceMe
+            </Heading>
+            <Heading size="2xl" fontWeight="normal" maxW="3xl">
+              Effortless Invoicing for Modern Businesses
+            </Heading>
+            <Text fontSize="xl" maxW="2xl" opacity={0.9}>
+              Create professional invoices in seconds, track payments effortlessly, 
+              and grow your business with powerful insights. All in one beautiful platform.
+            </Text>
           </VStack>
 
-          <Box w="100%" bg="white" p={8} borderRadius="lg" boxShadow="md">
-            <Tabs.Root value={activeTab} onValueChange={(e) => setActiveTab(e.value as 'create' | 'join')}>
-              <Tabs.List>
-                <Tabs.Trigger value="create">Create Company</Tabs.Trigger>
-                <Tabs.Trigger value="join">Join Company</Tabs.Trigger>
-              </Tabs.List>
+          {/* Feature Cards */}
+          <SimpleGrid columns={{ base: 1, md: 3 }} gap={6} w="100%" mt={8}>
+            <Box bg="whiteAlpha.200" backdropFilter="blur(10px)" p={6} borderRadius="xl" color="white">
+              <Text fontSize="3xl" mb={3}>⚡</Text>
+              <Heading size="md" mb={2}>Lightning Fast</Heading>
+              <Text opacity={0.9}>Create and send invoices in under 30 seconds</Text>
+            </Box>
+            <Box bg="whiteAlpha.200" backdropFilter="blur(10px)" p={6} borderRadius="xl" color="white">
+              <Text fontSize="3xl" mb={3}>🔒</Text>
+              <Heading size="md" mb={2}>Secure & Private</Heading>
+              <Text opacity={0.9}>Bank-level encryption keeps your data safe</Text>
+            </Box>
+            <Box bg="whiteAlpha.200" backdropFilter="blur(10px)" p={6} borderRadius="xl" color="white">
+              <Text fontSize="3xl" mb={3}>📊</Text>
+              <Heading size="md" mb={2}>Powerful Analytics</Heading>
+              <Text opacity={0.9}>Track revenue and payments in real-time</Text>
+            </Box>
+          </SimpleGrid>
+        </VStack>
+
+        {/* Signup Form */}
+        <Box maxW="md" mx="auto">
+          <Box bg="white" p={8} borderRadius="2xl" boxShadow="2xl">
+            <VStack gap={6}>
+              <VStack gap={2} textAlign="center">
+                <Heading size="xl" color="gray.800">Get Started Free</Heading>
+                <Text color="gray.600">No credit card required • Start in 60 seconds</Text>
+              </VStack>
+
+              <Tabs.Root value={activeTab} onValueChange={(e) => setActiveTab(e.value as 'create' | 'join')} w="100%">
+                <Tabs.List>
+                  <Tabs.Trigger value="create">Create Company</Tabs.Trigger>
+                  <Tabs.Trigger value="join">Join Company</Tabs.Trigger>
+                </Tabs.List>
 
               <Tabs.Content value="create" pt={6}>
                 <form onSubmit={handleCreateCompany}>
@@ -257,16 +308,17 @@ export default function SignupPage() {
                   </VStack>
                 </form>
               </Tabs.Content>
-            </Tabs.Root>
-          </Box>
+              </Tabs.Root>
 
-          <Text color="gray.600">
-            Already have an account?{' '}
-            <ChakraLink as={Link} href="/login" color="blue.600" fontWeight="medium">
-              Sign in
-            </ChakraLink>
-          </Text>
-        </VStack>
+              <Text color="gray.600" textAlign="center" fontSize="sm" mt={4}>
+                Already have an account?{' '}
+                <ChakraLink as={Link} href="/login" color="blue.600" fontWeight="medium">
+                  Sign in
+                </ChakraLink>
+              </Text>
+            </VStack>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );
