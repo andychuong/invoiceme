@@ -10,6 +10,11 @@ env:
   NODE_VERSION: '20'
   JAVA_VERSION: '17'
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   # Backend Tests
   backend-test:
@@ -31,17 +36,29 @@ jobs:
       working-directory: ./backend
       run: ./mvnw clean test
 
-    - name: Generate test report
+    - name: Check for test reports
       if: always()
+      id: check-reports
+      run: |
+        if [ -d "backend/target/surefire-reports" ] && [ -n "$(ls -A backend/target/surefire-reports/*.xml 2>/dev/null)" ]; then
+          echo "reports_exist=true" >> $GITHUB_OUTPUT
+        else
+          echo "reports_exist=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate test report
+      if: always() && steps.check-reports.outputs.reports_exist == 'true'
       uses: dorny/test-reporter@v1
       with:
         name: Backend Test Results
         path: backend/target/surefire-reports/*.xml
         reporter: java-junit
-        fail-on-error: true
+        fail-on-error: false
+        list-suites: all
+        list-tests: all
 
     - name: Upload test results
-      if: always()
+      if: always() && steps.check-reports.outputs.reports_exist == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: backend-test-results
