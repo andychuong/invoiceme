@@ -98,75 +98,23 @@ jobs:
         name: frontend-build
         path: frontend/.next/
 
-  # Deploy Backend to Railway
-  deploy-backend:
-    name: Deploy Backend to Railway
-    needs: [backend-test, frontend-test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Railway CLI
-      run: npm install -g @railway/cli
-
-    - name: Deploy Backend to Railway
-      run: |
-        if [ -z "$RAILWAY_TOKEN" ]; then
-          echo "Error: RAILWAY_TOKEN is not set"
-          echo "Please create a Project Token in Railway (Project Settings → Tokens)"
-          exit 1
-        fi
-        echo "Deploying backend to Railway..."
-        railway up --service backend
-
-  # Deploy Frontend to Railway
-  deploy-frontend:
-    name: Deploy Frontend to Railway
-    needs: [backend-test, frontend-test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Railway CLI
-      run: npm install -g @railway/cli
-
-    - name: Deploy Frontend to Railway
-      run: |
-        if [ -z "$RAILWAY_TOKEN" ]; then
-          echo "Error: RAILWAY_TOKEN is not set"
-          echo "Please create a Project Token in Railway (Project Settings → Tokens)"
-          exit 1
-        fi
-        echo "Deploying frontend to Railway..."
-        railway up --service frontend
-
   # Notify on Success/Failure (Optional)
   notify:
-    name: Notify Deployment Status
-    needs: [deploy-backend, deploy-frontend]
+    name: Tests Complete
+    needs: [backend-test, frontend-test]
     runs-on: ubuntu-latest
-    if: always() && github.ref == 'refs/heads/main'
+    if: always()
     
     steps:
-    - name: Deployment Success
-      if: needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success'
+    - name: Tests Success
+      if: needs.backend-test.result == 'success' && needs.frontend-test.result == 'success'
       run: |
-        echo "✅ Deployment successful!"
-        echo "Backend and Frontend deployed to Railway"
+        echo "✅ All tests passed!"
+        echo "Railway will automatically deploy since 'Wait for CI' is enabled"
 
-    - name: Deployment Failed
-      if: needs.deploy-backend.result == 'failure' || needs.deploy-frontend.result == 'failure'
+    - name: Tests Failed
+      if: needs.backend-test.result == 'failure' || needs.frontend-test.result == 'failure'
       run: |
-        echo "❌ Deployment failed!"
+        echo "❌ Tests failed!"
         exit 1
 
