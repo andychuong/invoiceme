@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { ApiError } from '@/types';
 
+// API URL should be set via NEXT_PUBLIC_API_URL environment variable in Railway
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 class HttpClient {
