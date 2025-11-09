@@ -4,8 +4,7 @@ aptPkgs = []
 
 [phases.build]
 cmds = [
-  "echo '=== Building with NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL ==='",
-  "npm run build"
+  "export NEXT_PUBLIC_API_URL=https://invoiceme-backend.up.railway.app/api && echo '=== Building with NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL ===' && npm run build"
 ]
 
 [build]
