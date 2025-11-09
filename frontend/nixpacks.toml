@@ -1,8 +1,6 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
-[phases.build]
-cmds = [
-  "NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://invoiceme-backend.up.railway.app/api} npm run build"
-]
+[variables]
+NEXT_PUBLIC_API_URL = "https://invoiceme-backend.up.railway.app/api"
 
