@@ -14,9 +14,15 @@ import {
   Heading,
   Spinner,
   Text,
+  MenuRoot,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
 } from '@chakra-ui/react';
-import { LogOut, Users, FileText, CreditCard, User } from 'lucide-react';
+import { LogOut, Users, FileText, CreditCard, User, Settings, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AuthResponse } from '@/types';
+import { UserProfileModal } from '@/components/user/UserProfileModal';
 
 export default function DashboardLayout({
   children,
@@ -27,7 +33,8 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const [userData, setUserData] = useState<AuthResponse | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   useLayoutEffect(() => {
     setMounted(true);
@@ -40,8 +47,8 @@ export default function DashboardLayout({
       const authenticated = authService.isAuthenticated();
       setIsAuthenticated(authenticated);
       if (authenticated) {
-        const storedUsername = authService.getUsername();
-        setUsername(storedUsername);
+        const data = authService.getUserData();
+        setUserData(data);
       } else {
         router.push('/login');
       }
@@ -68,10 +75,13 @@ export default function DashboardLayout({
     return null;
   }
 
+  const isAdmin = userData?.role === 'ADMIN';
+  
   const navItems = [
     { href: '/customers', label: 'Customers', icon: Users },
     { href: '/invoices', label: 'Invoices', icon: FileText },
     { href: '/payments', label: 'Payments', icon: CreditCard },
+    ...(isAdmin ? [{ href: '/company', label: 'Company', icon: Building2 }] : []),
   ];
 
   return (
@@ -90,16 +100,26 @@ export default function DashboardLayout({
                     justifyContent="center"
                     flexShrink={0}
                   >
-                    <Image 
-                      src="/assets/logo.svg" 
-                      alt="InvoiceMe Logo"
-                      width={40}
-                      height={40}
-                      style={{ width: '100%', height: '100%', display: 'block' }}
-                    />
+                    {userData?.companyLogoUrl ? (
+                      <Image 
+                        src={userData.companyLogoUrl} 
+                        alt={`${userData.companyName} Logo`}
+                        width={40}
+                        height={40}
+                        style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <Image 
+                        src="/assets/logo.svg" 
+                        alt="InvoiceMe Logo"
+                        width={40}
+                        height={40}
+                        style={{ width: '100%', height: '100%', display: 'block' }}
+                      />
+                    )}
                   </Box>
                   <Heading size="xl" color="gray.900" fontWeight="bold" lineHeight="1" letterSpacing="tight">
-                    InvoiceMe
+                    {userData?.companyName || 'InvoiceMe'}
                   </Heading>
                 </HStack>
               </Link>
@@ -135,35 +155,58 @@ export default function DashboardLayout({
               </HStack>
             </HStack>
             <HStack gap={3}>
-              {mounted && username && (
-                <HStack gap={2} px={3} py={1.5} borderRadius="md" bg="gray.50" _hover={{ bg: 'gray.100' }} transition="background 0.2s">
-                  <Box
-                    w={8}
-                    h={8}
-                    borderRadius="full"
-                    bg="primary.500"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    color="white"
-                  >
-                    <User size={16} />
-                  </Box>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
-                    {username}
-                  </Text>
-                </HStack>
+              {mounted && userData && (
+                <MenuRoot>
+                  <MenuTrigger asChild>
+                    <Box
+                      cursor="pointer"
+                      _hover={{ opacity: 0.8 }}
+                      transition="opacity 0.2s"
+                    >
+                      <HStack gap={2} px={3} py={1.5} borderRadius="md" bg="gray.50" _hover={{ bg: 'gray.100' }} transition="background 0.2s">
+                        {userData.profilePictureUrl ? (
+                          <img
+                            src={userData.profilePictureUrl}
+                            alt={userData.displayName || userData.username}
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              objectFit: 'cover'
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            w={8}
+                            h={8}
+                            borderRadius="full"
+                            bg="primary.500"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="white"
+                          >
+                            <User size={16} />
+                          </Box>
+                        )}
+                        <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                          {userData.displayName || userData.username}
+                        </Text>
+                      </HStack>
+                    </Box>
+                  </MenuTrigger>
+                  <MenuContent>
+                    <MenuItem value="profile" onClick={() => setShowProfileModal(true)}>
+                      <User size={16} style={{ marginRight: '8px' }} />
+                      Edit Profile
+                    </MenuItem>
+                    <MenuItem value="logout" onClick={handleLogout}>
+                      <LogOut size={16} style={{ marginRight: '8px' }} />
+                      Logout
+                    </MenuItem>
+                  </MenuContent>
+                </MenuRoot>
               )}
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                color="gray.600"
-                size="sm"
-                _hover={{ color: 'gray.900', bg: 'gray.100' }}
-              >
-                <LogOut size={16} style={{ marginRight: '8px' }} />
-                Logout
-              </Button>
             </HStack>
           </Flex>
         </Container>
@@ -171,6 +214,11 @@ export default function DashboardLayout({
       <Container maxW="7xl" py={8}>
         {children}
       </Container>
+      
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
     </Box>
   );
 }

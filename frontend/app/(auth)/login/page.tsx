@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import {
   Text,
   VStack,
   Field,
+  Link as ChakraLink,
 } from '@chakra-ui/react';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
@@ -198,6 +200,14 @@ export default function LoginPage() {
                   </Button>
                 </VStack>
               </form>
+
+              {/* Sign Up Link */}
+              <Text color="gray.600" textAlign="center" fontSize="sm">
+                Don't have an account?{' '}
+                <ChakraLink as={Link} href="/signup" color="primary.500" fontWeight="semibold">
+                  Sign up
+                </ChakraLink>
+              </Text>
             </VStack>
           </Card.Body>
         </Card.Root>

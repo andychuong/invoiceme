@@ -17,7 +17,7 @@ public class UpdateCustomerHandler {
 
     @Transactional
     public Customer handle(UpdateCustomerCommand command) {
-        Customer customer = customerRepository.findById(command.getId())
+        Customer customer = customerRepository.findByIdAndCompanyId(command.getId(), command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with id: " + command.getId()));
         
         // Check if email is being changed and if new email already exists

@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class GetCustomerByIdQuery {
     private UUID id;
+    private UUID companyId;
 }
 
 

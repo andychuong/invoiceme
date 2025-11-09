@@ -1,5 +1,6 @@
 package com.invoiceme.domain.customer;
 
+import com.invoiceme.domain.company.Company;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,13 +24,17 @@ public class Customer {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     @Column(columnDefinition = "TEXT")
     private String address;
 
     private String phone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -66,12 +71,13 @@ public class Customer {
         return email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 
-    public static Customer create(String name, String email, String address, String phone) {
+    public static Customer create(String name, String email, String address, String phone, Company company) {
         Customer customer = new Customer();
         customer.setName(name);
         customer.setEmail(email);
         customer.setAddress(address);
         customer.setPhone(phone);
+        customer.setCompany(company);
         return customer;
     }
 

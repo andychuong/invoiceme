@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UpdateCustomerCommand {
     private UUID id;
+    private UUID companyId;
     private String name;
     private String email;
     private String address;

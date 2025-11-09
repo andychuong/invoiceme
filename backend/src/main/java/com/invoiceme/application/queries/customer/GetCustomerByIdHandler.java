@@ -17,7 +17,7 @@ public class GetCustomerByIdHandler {
 
     @Transactional(readOnly = true)
     public Customer handle(GetCustomerByIdQuery query) {
-        return customerRepository.findById(query.getId())
+        return customerRepository.findByIdAndCompanyId(query.getId(), query.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with id: " + query.getId()));
     }
 }

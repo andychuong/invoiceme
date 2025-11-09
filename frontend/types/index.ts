@@ -123,10 +123,70 @@ export interface CreatePaymentRequest {
 export interface AuthResponse {
   token: string;
   expiresIn: number;
+  userId: string;
+  username: string;
+  email: string;
+  displayName?: string;
+  profilePictureUrl?: string;
+  companyId: string;
+  companyName: string;
+  companyLogoUrl?: string;
+  role: string;
 }
 
 export interface LoginRequest {
   username: string;
   password: string;
+}
+
+// User types
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  displayName?: string;
+  profilePictureUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateUserProfileRequest {
+  displayName?: string;
+  email?: string;
+  profilePictureUrl?: string;
+}
+
+// Company types
+export interface Company {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  companyCode?: string;  // UUID code for employees to join
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateCompanyRequest {
+  name: string;
+  logoUrl?: string;
+}
+
+export interface CompanyMember {
+  id: string;
+  userId: string;
+  username: string;
+  email: string;
+  displayName?: string;
+  profilePictureUrl?: string;
+  role: string;
+  joinedAt: string;
+}
+
+export interface InviteUserRequest {
+  username: string;
+  email: string;
+  password: string;
+  displayName?: string;
+  role: 'ADMIN' | 'ACCOUNTANT' | 'OPERATOR';
 }
 

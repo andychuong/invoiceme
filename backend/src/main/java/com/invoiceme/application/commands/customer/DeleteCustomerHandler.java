@@ -1,5 +1,6 @@
 package com.invoiceme.application.commands.customer;
 
+import com.invoiceme.domain.customer.Customer;
 import com.invoiceme.infrastructure.persistence.customer.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,10 +17,9 @@ public class DeleteCustomerHandler {
 
     @Transactional
     public void handle(DeleteCustomerCommand command) {
-        if (!customerRepository.existsById(command.getId())) {
-            throw new IllegalArgumentException("Customer not found with id: " + command.getId());
-        }
-        customerRepository.deleteById(command.getId());
+        Customer customer = customerRepository.findByIdAndCompanyId(command.getId(), command.getCompanyId())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found with id: " + command.getId()));
+        customerRepository.delete(customer);
     }
 }
 

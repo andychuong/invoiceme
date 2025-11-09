@@ -17,7 +17,7 @@ public class ListAllCustomersHandler {
 
     @Transactional(readOnly = true)
     public Page<Customer> handle(ListAllCustomersQuery query) {
-        return customerRepository.findAll(query.getPageable());
+        return customerRepository.findByCompanyId(query.getCompanyId(), query.getPageable());
     }
 }
 

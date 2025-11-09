@@ -36,6 +36,27 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     Page<Invoice> findAllWithCustomer(Pageable pageable);
     
     boolean existsByInvoiceNumber(String invoiceNumber);
+    
+    // Company-scoped queries
+    @EntityGraph(attributePaths = {"customer"})
+    @Query("SELECT i FROM Invoice i WHERE i.company.id = :companyId")
+    Page<Invoice> findByCompanyId(@Param("companyId") UUID companyId, Pageable pageable);
+    
+    @EntityGraph(attributePaths = {"customer"})
+    @Query("SELECT i FROM Invoice i WHERE i.company.id = :companyId AND i.status = :status")
+    Page<Invoice> findByCompanyIdAndStatus(@Param("companyId") UUID companyId, 
+                                           @Param("status") InvoiceStatus status, 
+                                           Pageable pageable);
+    
+    @EntityGraph(attributePaths = {"customer"})
+    @Query("SELECT i FROM Invoice i WHERE i.id = :id AND i.company.id = :companyId")
+    Optional<Invoice> findByIdAndCompanyId(@Param("id") UUID id, @Param("companyId") UUID companyId);
+    
+    @EntityGraph(attributePaths = {"customer"})
+    @Query("SELECT i FROM Invoice i WHERE i.customer.id = :customerId AND i.company.id = :companyId")
+    Page<Invoice> findByCustomerIdAndCompanyId(@Param("customerId") UUID customerId,
+                                               @Param("companyId") UUID companyId,
+                                               Pageable pageable);
 }
 
 

@@ -8,6 +8,7 @@ import com.invoiceme.infrastructure.api.dto.common.PageResponseDTO;
 import com.invoiceme.infrastructure.api.dto.customer.CustomerRequestDTO;
 import com.invoiceme.infrastructure.api.dto.customer.CustomerResponseDTO;
 import com.invoiceme.infrastructure.api.mapper.CustomerMapper;
+import com.invoiceme.infrastructure.config.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -46,8 +48,12 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerRequestDTO request) {
+    public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerRequestDTO request, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         CreateCustomerCommand command = new CreateCustomerCommand(
+                companyId,
                 request.getName(),
                 request.getEmail(),
                 request.getAddress(),
@@ -60,9 +66,14 @@ public class CustomerController {
     @PutMapping("/{id}")
     public ResponseEntity<CustomerResponseDTO> updateCustomer(
             @PathVariable UUID id,
-            @Valid @RequestBody CustomerRequestDTO request) {
+            @Valid @RequestBody CustomerRequestDTO request,
+            Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         UpdateCustomerCommand command = new UpdateCustomerCommand(
                 id,
+                companyId,
                 request.getName(),
                 request.getEmail(),
                 request.getAddress(),
@@ -73,15 +84,21 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id) {
-        DeleteCustomerCommand command = new DeleteCustomerCommand(id);
+    public ResponseEntity<Void> deleteCustomer(@PathVariable UUID id, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
+        DeleteCustomerCommand command = new DeleteCustomerCommand(id, companyId);
         deleteCustomerHandler.handle(command);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponseDTO> getCustomerById(@PathVariable UUID id) {
-        GetCustomerByIdQuery query = new GetCustomerByIdQuery(id);
+    public ResponseEntity<CustomerResponseDTO> getCustomerById(@PathVariable UUID id, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
+        GetCustomerByIdQuery query = new GetCustomerByIdQuery(id, companyId);
         Customer customer = getCustomerByIdHandler.handle(query);
         return ResponseEntity.ok(customerMapper.toResponseDTO(customer));
     }
@@ -90,7 +107,11 @@ public class CustomerController {
     public ResponseEntity<PageResponseDTO<CustomerResponseDTO>> listAllCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String sort) {
+            @RequestParam(required = false) String sort,
+            Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         Pageable pageable;
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
@@ -106,7 +127,7 @@ public class CustomerController {
             pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         }
         
-        ListAllCustomersQuery query = new ListAllCustomersQuery(pageable);
+        ListAllCustomersQuery query = new ListAllCustomersQuery(companyId, pageable);
         Page<Customer> customerPage = listAllCustomersHandler.handle(query);
         
         PageResponseDTO<CustomerResponseDTO> response = new PageResponseDTO<>();

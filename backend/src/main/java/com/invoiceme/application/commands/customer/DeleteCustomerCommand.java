@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DeleteCustomerCommand {
     private UUID id;
+    private UUID companyId;
 }
 
 
