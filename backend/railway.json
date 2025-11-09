@@ -5,7 +5,6 @@
     "buildCommand": "./mvnw clean package -DskipTests"
   },
   "deploy": {
-    "startCommand": "./start.sh",
     "healthcheckPath": "/actuator/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
