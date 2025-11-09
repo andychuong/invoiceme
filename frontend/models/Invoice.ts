@@ -25,7 +25,7 @@ export class Invoice {
     this.customer = data.customer;
     // If customerName is provided but customer object is not, create a minimal customer object
     if (this.customerName && !this.customer) {
-      this.customer = { name: this.customerName, id: this.customerId };
+      this.customer = { name: this.customerName, id: this.customerId, email: '' };
     }
     this.status = data.status;
     this.issueDate = data.issueDate;
