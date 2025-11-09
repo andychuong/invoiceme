@@ -105,6 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
     
@@ -118,12 +119,12 @@ jobs:
     - name: Authenticate Railway
       run: |
         echo "Authenticating with Railway..."
-        if [ -z "$RAILWAY_TOKEN" ]; then
-          echo "Error: RAILWAY_TOKEN is not set"
+        if [ -z "$RAILWAY_API_TOKEN" ]; then
+          echo "Error: RAILWAY_API_TOKEN is not set"
           exit 1
         fi
-        echo "Token is set (length: ${#RAILWAY_TOKEN})"
-        export RAILWAY_TOKEN="$RAILWAY_TOKEN"
+        echo "Token is set (length: ${#RAILWAY_API_TOKEN})"
+        export RAILWAY_API_TOKEN="$RAILWAY_API_TOKEN"
         railway whoami
 
     - name: Link Railway Project (if needed)
@@ -146,6 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
     
@@ -159,12 +161,12 @@ jobs:
     - name: Authenticate Railway
       run: |
         echo "Authenticating with Railway..."
-        if [ -z "$RAILWAY_TOKEN" ]; then
-          echo "Error: RAILWAY_TOKEN is not set"
+        if [ -z "$RAILWAY_API_TOKEN" ]; then
+          echo "Error: RAILWAY_API_TOKEN is not set"
           exit 1
         fi
-        echo "Token is set (length: ${#RAILWAY_TOKEN})"
-        export RAILWAY_TOKEN="$RAILWAY_TOKEN"
+        echo "Token is set (length: ${#RAILWAY_API_TOKEN})"
+        export RAILWAY_API_TOKEN="$RAILWAY_API_TOKEN"
         railway whoami
 
     - name: Link Railway Project (if needed)
