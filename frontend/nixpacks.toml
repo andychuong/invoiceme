@@ -1,12 +1,13 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
+aptPkgs = []
 
 [phases.build]
 cmds = [
-  "echo '=== Environment Check ==='",
-  "echo NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL",
-  "rm -rf .next",
-  "npm run build",
-  "echo '=== Build Complete ==='"
+  "echo '=== Building with NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL ==='",
+  "npm run build"
 ]
+
+[build]
+cacheDirectories = []
 
