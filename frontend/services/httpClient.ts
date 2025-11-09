@@ -3,17 +3,23 @@ import { ApiError } from '@/types';
 
 // API URL should be set via NEXT_PUBLIC_API_URL environment variable in Railway
 // Fallback to production URL if not set (for production builds)
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
-    ? 'https://invoiceme-backend.up.railway.app/api' 
-    : 'http://localhost:8080/api');
+function getApiUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // Runtime check: use production backend if not on localhost
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return 'https://invoiceme-backend.up.railway.app/api';
+  }
+  return 'http://localhost:8080/api';
+}
 
 class HttpClient {
   private client: AxiosInstance;
 
   constructor() {
     this.client = axios.create({
-      baseURL: API_URL,
+      baseURL: getApiUrl(),
       headers: {
         'Content-Type': 'application/json',
       },
