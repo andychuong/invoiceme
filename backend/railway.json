@@ -5,7 +5,7 @@
     "buildCommand": "./mvnw clean package -DskipTests"
   },
   "deploy": {
-    "startCommand": "java -Dserver.port=$PORT -jar target/invoiceme-backend-1.0.0.jar",
+    "startCommand": "java -Dserver.port=$PORT -jar /app/target/invoiceme-backend-1.0.0.jar",
     "healthcheckPath": "/actuator/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
