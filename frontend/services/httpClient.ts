@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { ApiError } from '@/types';
 
-// API URL - hardcoded for production, localhost for development
-const API_URL = 'https://invoiceme-backend.up.railway.app/api';
+// API URL - defaults to localhost for development
+// Set NEXT_PUBLIC_API_URL environment variable for production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 class HttpClient {
   private client: AxiosInstance;
