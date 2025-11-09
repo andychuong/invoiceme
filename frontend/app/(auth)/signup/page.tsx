@@ -19,6 +19,9 @@ import Link from 'next/link';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 
+// API URL - use environment variable or fallback to localhost
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
 export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +50,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/signup', {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(createForm),
@@ -76,7 +79,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/join', {
+      const response = await fetch(`${API_URL}/auth/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(joinForm),
