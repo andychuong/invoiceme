@@ -81,6 +81,7 @@ public class CustomerInvoicePaymentIntegrationTest {
         ));
 
         CreateInvoiceCommand invoiceCommand = new CreateInvoiceCommand(
+                company.getId(),
                 customer.getId(),
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
@@ -98,7 +99,7 @@ public class CustomerInvoicePaymentIntegrationTest {
                     "Balance should be 1750.00 but was " + invoice.getBalance());
 
         // Step 3: Mark invoice as sent
-        MarkInvoiceAsSentCommand markSentCommand = new MarkInvoiceAsSentCommand(invoice.getId());
+        MarkInvoiceAsSentCommand markSentCommand = new MarkInvoiceAsSentCommand(company.getId(), invoice.getId());
         Invoice sentInvoice = markInvoiceAsSentHandler.handle(markSentCommand);
         assertEquals(InvoiceStatus.SENT, sentInvoice.getStatus());
 
