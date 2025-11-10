@@ -8,6 +8,7 @@ import com.invoiceme.infrastructure.api.dto.common.PageResponseDTO;
 import com.invoiceme.infrastructure.api.dto.invoice.InvoiceRequestDTO;
 import com.invoiceme.infrastructure.api.dto.invoice.InvoiceResponseDTO;
 import com.invoiceme.infrastructure.api.mapper.InvoiceMapper;
+import com.invoiceme.infrastructure.config.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,8 +56,12 @@ public class InvoiceController {
     }
 
     @PostMapping
-    public ResponseEntity<InvoiceResponseDTO> createInvoice(@Valid @RequestBody InvoiceRequestDTO request) {
+    public ResponseEntity<InvoiceResponseDTO> createInvoice(@Valid @RequestBody InvoiceRequestDTO request, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         CreateInvoiceCommand command = new CreateInvoiceCommand();
+        command.setCompanyId(companyId);
         command.setCustomerId(request.getCustomerId());
         command.setIssueDate(request.getIssueDate());
         command.setDueDate(request.getDueDate());
@@ -73,8 +79,13 @@ public class InvoiceController {
     @PutMapping("/{id}")
     public ResponseEntity<InvoiceResponseDTO> updateInvoice(
             @PathVariable UUID id,
-            @Valid @RequestBody InvoiceRequestDTO request) {
+            @Valid @RequestBody InvoiceRequestDTO request,
+            Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         UpdateInvoiceCommand command = new UpdateInvoiceCommand();
+        command.setCompanyId(companyId);
         command.setId(id);
         command.setCustomerId(request.getCustomerId());
         command.setIssueDate(request.getIssueDate());
@@ -91,15 +102,21 @@ public class InvoiceController {
     }
 
     @PatchMapping("/{id}/mark-sent")
-    public ResponseEntity<InvoiceResponseDTO> markInvoiceAsSent(@PathVariable UUID id) {
-        MarkInvoiceAsSentCommand command = new MarkInvoiceAsSentCommand(id);
+    public ResponseEntity<InvoiceResponseDTO> markInvoiceAsSent(@PathVariable UUID id, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
+        MarkInvoiceAsSentCommand command = new MarkInvoiceAsSentCommand(companyId, id);
         Invoice invoice = markInvoiceAsSentHandler.handle(command);
         return ResponseEntity.ok(toResponseDTO(invoice));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceResponseDTO> getInvoiceById(@PathVariable UUID id) {
-        GetInvoiceByIdQuery query = new GetInvoiceByIdQuery(id);
+    public ResponseEntity<InvoiceResponseDTO> getInvoiceById(@PathVariable UUID id, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
+        GetInvoiceByIdQuery query = new GetInvoiceByIdQuery(companyId, id);
         Invoice invoice = getInvoiceByIdHandler.handle(query);
         return ResponseEntity.ok(toResponseDTO(invoice));
     }
@@ -109,7 +126,11 @@ public class InvoiceController {
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         String[] sortParams = sort.split(",");
         Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -117,10 +138,10 @@ public class InvoiceController {
 
         Page<Invoice> invoicePage;
         if (status != null && !status.isEmpty()) {
-            ListInvoicesByStatusQuery query = new ListInvoicesByStatusQuery(status, pageable);
+            ListInvoicesByStatusQuery query = new ListInvoicesByStatusQuery(companyId, status, pageable);
             invoicePage = listInvoicesByStatusHandler.handle(query);
         } else {
-            ListAllInvoicesQuery query = new ListAllInvoicesQuery(pageable);
+            ListAllInvoicesQuery query = new ListAllInvoicesQuery(companyId, pageable);
             invoicePage = listAllInvoicesHandler.handle(query);
         }
 
@@ -143,13 +164,17 @@ public class InvoiceController {
             @PathVariable UUID customerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UUID companyId = userDetails.getDefaultCompanyId();
+        
         String[] sortParams = sort.split(",");
         Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
 
-        ListInvoicesByCustomerQuery query = new ListInvoicesByCustomerQuery(customerId, pageable);
+        ListInvoicesByCustomerQuery query = new ListInvoicesByCustomerQuery(companyId, customerId, pageable);
         Page<Invoice> invoicePage = listInvoicesByCustomerHandler.handle(query);
 
         PageResponseDTO<InvoiceResponseDTO> response = new PageResponseDTO<>();

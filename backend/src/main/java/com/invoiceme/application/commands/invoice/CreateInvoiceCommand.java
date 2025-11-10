@@ -15,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateInvoiceCommand {
+    private UUID companyId;
     private UUID customerId;
     private LocalDate issueDate;
     private LocalDate dueDate;

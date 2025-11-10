@@ -24,10 +24,10 @@ public class UpdateInvoiceHandler {
 
     @Transactional
     public Invoice handle(UpdateInvoiceCommand command) {
-        Invoice invoice = invoiceRepository.findById(command.getId())
+        Invoice invoice = invoiceRepository.findByIdAndCompanyId(command.getId(), command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found with id: " + command.getId()));
 
-        Customer customer = customerRepository.findById(command.getCustomerId())
+        Customer customer = customerRepository.findByIdAndCompanyId(command.getCustomerId(), command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with id: " + command.getCustomerId()));
 
         invoice.update(customer, command.getIssueDate(), command.getDueDate());

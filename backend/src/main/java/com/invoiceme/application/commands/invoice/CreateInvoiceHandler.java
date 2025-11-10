@@ -22,7 +22,7 @@ public class CreateInvoiceHandler {
 
     @Transactional
     public Invoice handle(CreateInvoiceCommand command) {
-        Customer customer = customerRepository.findById(command.getCustomerId())
+        Customer customer = customerRepository.findByIdAndCompanyId(command.getCustomerId(), command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with id: " + command.getCustomerId()));
 
         String invoiceNumber = generateInvoiceNumber();

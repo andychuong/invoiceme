@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MarkInvoiceAsSentCommand {
+    private UUID companyId;
     private UUID id;
 }
 

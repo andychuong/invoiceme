@@ -17,7 +17,7 @@ public class GetInvoiceByIdHandler {
 
     @Transactional(readOnly = true)
     public Invoice handle(GetInvoiceByIdQuery query) {
-        return invoiceRepository.findById(query.getId())
+        return invoiceRepository.findByIdAndCompanyId(query.getId(), query.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found with id: " + query.getId()));
     }
 }

@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetInvoiceByIdQuery {
+    private UUID companyId;
     private UUID id;
 }
 

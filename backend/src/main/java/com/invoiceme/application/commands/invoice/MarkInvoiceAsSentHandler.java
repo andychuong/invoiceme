@@ -17,7 +17,7 @@ public class MarkInvoiceAsSentHandler {
 
     @Transactional
     public Invoice handle(MarkInvoiceAsSentCommand command) {
-        Invoice invoice = invoiceRepository.findById(command.getId())
+        Invoice invoice = invoiceRepository.findByIdAndCompanyId(command.getId(), command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found with id: " + command.getId()));
         
         invoice.markAsSent();

@@ -2,9 +2,9 @@
 
 A modern, multi-tenant invoice management system built with Spring Boot and Next.js, featuring company management, team collaboration, and secure data isolation.
 
-**🚀 Live Demo**: [https://invoiceme-five.vercel.app](https://invoiceme-five.vercel.app)
+**Live Demo**: [https://invoiceme-five.vercel.app](https://invoiceme-five.vercel.app)
 
-**📖 Quick Links**: [Demo Guide](docs/DEMO_GUIDE.md) | [User Guide](docs/USER_GUIDE.md) | [Architecture](docs/ARCHITECTURE.md)
+**Quick Links**: [Demo Guide](docs/DEMO_GUIDE.md) | [User Guide](docs/USER_GUIDE.md) | [Architecture](docs/ARCHITECTURE.md)
 
 ## Features
 

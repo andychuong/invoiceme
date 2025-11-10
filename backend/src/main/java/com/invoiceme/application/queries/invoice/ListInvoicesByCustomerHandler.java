@@ -18,7 +18,7 @@ public class ListInvoicesByCustomerHandler {
 
     @Transactional(readOnly = true)
     public Page<Invoice> handle(ListInvoicesByCustomerQuery query) {
-        return invoiceRepository.findByCustomerId(query.getCustomerId(), query.getPageable());
+        return invoiceRepository.findByCustomerIdAndCompanyId(query.getCustomerId(), query.getCompanyId(), query.getPageable());
     }
 }
 

@@ -13,6 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ListInvoicesByCustomerQuery {
+    private UUID companyId;
     private UUID customerId;
     private Pageable pageable;
 }

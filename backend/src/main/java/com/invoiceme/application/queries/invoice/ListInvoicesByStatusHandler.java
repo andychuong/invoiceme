@@ -23,7 +23,7 @@ public class ListInvoicesByStatusHandler {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid invoice status: " + query.getStatus());
         }
-        return invoiceRepository.findByStatus(status, query.getPageable());
+        return invoiceRepository.findByCompanyIdAndStatus(query.getCompanyId(), status, query.getPageable());
     }
 }
 
